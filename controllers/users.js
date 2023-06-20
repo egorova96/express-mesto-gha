@@ -22,7 +22,8 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  user.findUserById(req.params._id).then((userData) => {
+  const { id } = req.params;
+  user.findUserById(id).then((userData) => {
     if (!userData) {
       res.status(ERROR_NOT_FOUND).send({ message: 'Данного пользователя не существует' });
     }
@@ -61,8 +62,9 @@ module.exports.updateUserData = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
+  const userId = req.user._id;
   user
-    .findByIdAndUpdate(req.user._id, { avatar }, { new: true })
+    .findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     .then((userData) => {
       if (!userData) {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
