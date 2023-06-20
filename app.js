@@ -4,10 +4,14 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const ERROR_NOT_FOUND = 404;
 
+<<<<<<< HEAD
 const app = express();
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
+=======
+>>>>>>> 7e9345da3ed4c80d1df94e43c28386ef3b488cd3
 const { PORT = 3000 } = process.env;
+const app = express();
 app.listen(PORT, () => {
   console.log(`Server ok ${PORT}`);
 });
