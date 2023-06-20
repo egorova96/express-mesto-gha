@@ -21,16 +21,9 @@ module.exports.createUser = (req, res) => {
   });
 };
 
-<<<<<<< HEAD
 module.exports.getUserId = (req, res) => {
   user.findUserById(req.params._id).then((data) => {
     if (!data) {
-=======
-module.exports.getUserById = (req, res) => {
-  const { id } = req.params;
-  user.findUserById(id).then((userData) => {
-    if (!userData) {
->>>>>>> 7e9345da3ed4c80d1df94e43c28386ef3b488cd3
       res.status(ERROR_NOT_FOUND).send({ message: 'Данного пользователя не существует' });
     }
     getAnswer(res, data);
@@ -63,9 +56,8 @@ module.exports.updateUserData = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  const userId = req.user._id;
   user
-    .findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
+    .findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((userData) => {
       if (!userData) {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });

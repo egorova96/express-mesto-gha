@@ -6,8 +6,7 @@ const card = require('../models/card');
 const ERROR_iNCORRECT_DATA = 400;
 const ERROR_NOT_FOUND = 404;
 const ERROR_CODE = 500;
-
-/* const getAnswer = (res, data) => res.status(200).send(data); */
+const getAnswer = (res, data) => res.status(200).send(data);
 
 module.exports.createCard = (req, res) => {
   console.log(req.user._id);
@@ -29,12 +28,7 @@ module.exports.getAllCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-<<<<<<< HEAD
   card.findByIdAndRemove(req.params.cardId)
-=======
-  const { cardId } = req.params;
-  card.findByIdAndRemove(cardId)
->>>>>>> 7e9345da3ed4c80d1df94e43c28386ef3b488cd3
     .then((cardData) => {
       if (!cardData) {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
@@ -50,45 +44,49 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.likeCard = (req, res) => {
-  const { cardId } = req.params;
-  const { _id } = req.user;
+  const cardId = req.params._id;
+  const userId = req.user._id;
   card.findByIdAndUpdate(
     cardId,
-    { $addToSet: { likes: _id } },
+    { $addToSet: { likes: userId } },
     { new: true },
   )
     .then((cardData) => {
       if (!cardData) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
+        res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
+        return;
       }
       getAnswer(res, cardData);
     })
     .catch((err) => {
       if (err.name === 'CardError') {
-        return res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
+        res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
+        return;
       }
       res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
     });
 };
 
 module.exports.dislikeCard = (req, res) => {
-  const { cardId } = req.params;
-  const { _id } = req.user;
+  const cardId = req.params._id;
+  const userId = req.user._id;
 
   card.findByIdAndUpdate(
     cardId,
-    { $pull: { likes: _id } },
+    { $pull: { likes: userId } },
     { new: true },
   )
     .then((cardData) => {
       if (!cardData) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
+        res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
+        return;
       }
       getAnswer(res, cardData);
     })
     .catch((err) => {
       if (err.name === 'CardError') {
-        return res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
+        res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
+        return;
       }
       res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
     });
