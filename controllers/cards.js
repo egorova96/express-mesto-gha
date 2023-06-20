@@ -8,11 +8,11 @@ const ERROR_NOT_FOUND = 404;
 const ERROR_CODE = 500;
 const getAnswer = (res, data) => res.status(200).send(data);
 
-module.exports.createCard = (req, res) => {
-  console.log(req.user._id);
+module.exports.addCard = (req, res) => {
+  /* console.log(req.user._id); */
   const { name, link } = req.body;
-  const { _id } = req.user;
-  card.create({ name, link, owner: _id }).then((userData) => res.send({ data: userData }))
+  const owner = req.user._id;
+  card.create({ name, link, owner }).then((cardData) => res.send({ data: cardData }))
     // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -28,12 +28,12 @@ module.exports.getAllCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  card.findByIdAndRemove(req.params.cardId)
+  card.findByIdAndRemove(req.params._id)
     .then((cardData) => {
       if (!cardData) {
         return res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
       }
-      getAnswer(res, cardData);
+      res.send({ data: cardData });
     })
     .catch((err) => {
       if (err.name === 'CardError') {
@@ -56,7 +56,7 @@ module.exports.likeCard = (req, res) => {
         res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
         return;
       }
-      getAnswer(res, cardData);
+      res.send({ data: cardData });
     })
     .catch((err) => {
       if (err.name === 'CardError') {
@@ -81,7 +81,7 @@ module.exports.dislikeCard = (req, res) => {
         res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
         return;
       }
-      getAnswer(res, cardData);
+      res.send({ data: cardData });
     })
     .catch((err) => {
       if (err.name === 'CardError') {

@@ -6,7 +6,7 @@ const ERROR_iNCORRECT_DATA = 400;
 const ERROR_NOT_FOUND = 404;
 const ERROR_CODE = 500;
 
-const getAnswer = (res, data) => res.status(200).send(data);
+/* const getAnswer = (res, data) => res.status(200).send(data); */
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
@@ -21,12 +21,12 @@ module.exports.createUser = (req, res) => {
   });
 };
 
-module.exports.getUserId = (req, res) => {
-  user.findUserById(req.params._id).then((data) => {
-    if (!data) {
+module.exports.getUserById = (req, res) => {
+  user.findUserById(req.params._id).then((userData) => {
+    if (!userData) {
       res.status(ERROR_NOT_FOUND).send({ message: 'Данного пользователя не существует' });
     }
-    getAnswer(res, data);
+    res.send({ data: userData });
   }).catch((err) => {
     if (err.name === 'UserError') {
       res.status(ERROR_iNCORRECT_DATA).send({ message: 'ID пользователя не найден' });
@@ -45,7 +45,12 @@ module.exports.updateUserData = (req, res) => {
   const { name, about } = req.body;
   user
     .findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .then((data) => getAnswer(res, data))
+    .then((userData) => {
+      if (!userData) {
+        return res.status(ERROR_NOT_FOUND).send({ message: 'Данного пользователя не существует' });
+      }
+      res.send({ data: userData });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(ERROR_iNCORRECT_DATA).send({ message: 'Введены некорректные данные' });
