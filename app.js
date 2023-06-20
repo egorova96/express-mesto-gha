@@ -4,8 +4,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const ERROR_NOT_FOUND = 404;
 
-const app = express();
 const { PORT = 3000 } = process.env;
+const app = express();
 app.listen(PORT, () => {
   console.log(`Server ok ${PORT}`);
 });

@@ -10,7 +10,7 @@ const ERROR_CODE = 500;
 /* const getAnswer = (res, data) => res.status(200).send(data); */
 
 module.exports.addCard = (req, res) => {
-  console.log(req.user._id);
+  /* console.log(req.user._id); */
   const { name, link } = req.body;
   const { _id } = req.user;
   card.create({ name, link, owner: _id }).then((userData) => res.send({ data: userData }))
