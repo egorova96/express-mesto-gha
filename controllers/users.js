@@ -1,17 +1,18 @@
+/* eslint-disable no-useless-return */
 /* eslint-disable consistent-return */
 /* eslint-disable camelcase */
 // eslint-disable-next-line import/newline-after-import
 const user = require('../models/user');
-const ERROR_iNCORRECT_DATA = 400;
-const ERROR_NOT_FOUND = 404;
-const ERROR_CODE = 500;
+const {
+  ERROR_iNCORRECT_DATA, ERROR_NOT_FOUND, ERROR_CODE, CREATED_SUCCESS,
+} = require('../utils/constants');
 
 const getAnswer = (res, data) => res.status(200).send(data);
 
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   user.create({ name, about, avatar }).then((userData) => {
-    res.send({ data: userData });
+    res.status(CREATED_SUCCESS).send({ data: userData });
   }).catch((err) => {
     if (err.name === 'ValidationError') {
       res.status(ERROR_iNCORRECT_DATA).send({ message: 'Введены некорректные данные' });
@@ -30,9 +31,9 @@ module.exports.getUserId = (req, res) => {
   }).catch((err) => {
     if (err.name === 'UserError') {
       res.status(ERROR_iNCORRECT_DATA).send({ message: 'ID пользователя не найден' });
-    } else {
-      res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
+      return;
     }
+    res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
   });
 };
 

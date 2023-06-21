@@ -1,18 +1,20 @@
+/* eslint-disable indent */
 /* eslint-disable camelcase */
 /* eslint-disable consistent-return */
 /* eslint-disable no-console */
 const card = require('../models/card');
+const {
+  ERROR_iNCORRECT_DATA, ERROR_NOT_FOUND, ERROR_CODE, CREATED_SUCCESS,
+} = require('../utils/constants');
 
-const ERROR_iNCORRECT_DATA = 400;
-const ERROR_NOT_FOUND = 404;
-const ERROR_CODE = 500;
 const getAnswer = (res, data) => res.status(200).send(data);
 
 module.exports.createCard = (req, res) => {
   console.log(req.user._id);
   const { name, link } = req.body;
   const { _id } = req.user;
-  card.create({ name, link, owner: _id }).then((userData) => res.send({ data: userData }))
+  card.create({ name, link, owner: _id })
+  .then((userData) => res.status(CREATED_SUCCESS).send({ data: userData }))
     // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -38,6 +40,7 @@ module.exports.deleteCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CardError') {
         res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
+        return;
       }
       res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
     });
