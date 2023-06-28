@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const ERROR_NOT_FOUND = 404;
+const { createUser, login } = require('./controllers/users');
 
 const app = express();
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
@@ -21,13 +22,8 @@ app.use(userRouters);
 const cardRouters = require('./routes/cards');
 app.use(cardRouters);
 
-/* app.use(express.json()); */
-app.use((req, res, next) => {
-  req.user = {
-    _id: '648eca0264b49a1ae943fe2f',
-  };
-  next();
-});
+app.post('/signin', login);
+app.post('/signup', createUser);
 
 app.use('*', (req, res) => res.status(ERROR_NOT_FOUND).send({ message: 'Не найдено' }));
 

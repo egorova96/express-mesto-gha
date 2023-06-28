@@ -1,15 +1,17 @@
+/* eslint-disable implicit-arrow-linebreak */
 /* eslint-disable indent */
 /* eslint-disable camelcase */
 /* eslint-disable consistent-return */
 /* eslint-disable no-console */
 const card = require('../models/card');
-const {
-  ERROR_iNCORRECT_DATA, ERROR_NOT_FOUND, ERROR_CODE, CREATED_SUCCESS,
-} = require('../utils/constants');
+const { CREATED_SUCCESS, OK } = require('../utils/constants');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
 
-const getAnswer = (res, data) => res.status(200).send(data);
+// const getAnswer = (res, data) => res.status(200).send(data);
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   console.log(req.user._id);
   const { name, link } = req.body;
   const { _id } = req.user;
@@ -17,80 +19,84 @@ module.exports.createCard = (req, res) => {
   .then((userData) => res.status(CREATED_SUCCESS).send({ data: userData }))
     // eslint-disable-next-line consistent-return
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(ERROR_iNCORRECT_DATA).send({ message: 'Введены неверные данные' });
+      if (err.name === 'BadRequestError') {
+        next(new BadRequestError('Введены неверные данные'));
+      } else {
+      next(err);
       }
-      res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
     });
 };
 
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (res, next) => {
   card.find({})
-    .then((cardsData) => res.send({ data: cardsData })).catch(() => res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' }));
+    .then((cardsData) => res.send({ data: cardsData })).catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
-  card.findByIdAndRemove(req.params.cardId)
+module.exports.deleteCard = (req, res, next) => {
+  card.findById(req.params.cardId)
     .then((cardData) => {
       if (!cardData) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
+        throw new NotFoundError('Выбранного фото не существует');
       }
-      getAnswer(res, cardData);
-    })
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Недостаточно прав');
+      }
+    card.findByIdAndRemove(req.params.cardId).then((userData) =>
+    res.status(OK).send({ data: userData }))
     .catch((err) => {
-      if (err.name === 'CardError') {
-        res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
-        return;
+      if (err.name === 'UserError') {
+        return next(new BadRequestError('Неверный Id пользователя'));
       }
-      res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
+      return next(err);
     });
+  })
+  .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
-  const cardId = req.params._id;
-  const userId = req.user._id;
+module.exports.likeCard = (req, res, next) => {
+  card.findById(req.params.cardId).then((cardData) => {
+    if (!cardData) {
+      throw new NotFoundError('Выбранного фото не существует');
+    }
   card.findByIdAndUpdate(
-    cardId,
-    { $addToSet: { likes: userId } },
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .then((cardData) => {
-      if (!cardData) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
-        return;
-      }
-      getAnswer(res, cardData);
-    })
-    .catch((err) => {
+    .then((newCardData) => {
+        res.status(OK).send({ data: newCardData });
+      })
+      .catch((err) => {
       if (err.name === 'CardError') {
-        res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
-        return;
+        return next(new BadRequestError('Неверный Id пользователя'));
       }
-      res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
+      return next(err);
     });
+    })
+    .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   const cardId = req.params._id;
   const userId = req.user._id;
-
-  card.findByIdAndUpdate(
+  card.findById(cardId).then((cardData) => {
+    if (!cardData) {
+      throw new NotFoundError('Выбранного фото не существует');
+    } return card
+    .findByIdAndUpdate(
     cardId,
     { $pull: { likes: userId } },
     { new: true },
   )
-    .then((cardData) => {
-      if (!cardData) {
-        res.status(ERROR_NOT_FOUND).send({ message: 'Выбранного фото не существует' });
-        return;
-      }
-      getAnswer(res, cardData);
-    })
+    .then((newCardData) => {
+        res.status(OK).send({ data: newCardData });
+      })
     .catch((err) => {
       if (err.name === 'CardError') {
-        res.status(ERROR_iNCORRECT_DATA).send({ message: 'Неверный Id пользователя' });
-        return;
+        return next(new BadRequestError('Неверный Id пользователя'));
       }
-      res.status(ERROR_CODE).send({ message: 'Неизвестная ошибка' });
+      return next(err);
     });
+  })
+    .catch(next);
 };
