@@ -42,26 +42,6 @@ module.exports.createUser = (req, res, next) => {
   });
 };
 
-module.exports.login = (req, res, next) => {
-  const { email, password } = req.body;
-  user.findUserByCredentials(email, password)
-  .then((userData) => {
-    const token = jwt.sign({ _id: userData._id }, 'super-strong-secret', { expiresIn: '7d' });
-    res.send({ token });
-  })
-  .catch(next);
-};
-
-module.exports.getMyProfile = (req, res, next) => {
-  user.findById(req.user._id).then((userData) => {
-    if (!userData) {
-      throw new NotFoundError('Запрашиваемый пользователь не найден');
-    }
-    res.send({ data: userData });
-  })
-  .catch(next);
-};
-
 module.exports.getUserId = (req, res, next) => {
   const { userId } = req.params;
   user.findById(userId).then((userData) => {
@@ -78,6 +58,26 @@ module.exports.getUserId = (req, res, next) => {
   });
 };
 
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  user.findUserByCredentials(email, password)
+  .then((userData) => {
+    const token = jwt.sign({ _id: userData._id }, 'super-strong-secret', { expiresIn: '7d' });
+    res.send({ token });
+  })
+  .catch(next);
+};
+
+module.exports.getMyProfile = (req, res, next) => {
+  user.findById(req.userData._id).then((userData) => {
+    if (!userData) {
+      throw new NotFoundError('Запрашиваемый пользователь не найден');
+    }
+    res.send({ data: userData });
+  })
+  .catch(next);
+};
+
 module.exports.getUsers = (req, res, next) => {
   user.find({}).then((usersData) => res.send({ data: usersData }))
     .catch(next);
@@ -86,7 +86,7 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.updateUserData = (req, res, next) => {
   const { name, about } = req.body;
   user
-    .findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+    .findByIdAndUpdate(req.userData._id, { name, about }, { new: true, runValidators: true })
     .then((userData) => {
       if (!userData) {
         throw new NotFoundError('Запрашиваемый пользователь не найден');
@@ -104,7 +104,7 @@ module.exports.updateUserData = (req, res, next) => {
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   user
-    .findByIdAndUpdate(req.user._id, { avatar }, { new: true })
+    .findByIdAndUpdate(req.userData._id, { avatar }, { new: true })
     .then((userData) => {
       if (!userData) {
         throw new NotFoundError('Пользователь не найден');
