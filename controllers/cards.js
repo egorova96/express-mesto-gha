@@ -25,7 +25,7 @@ module.exports.createCard = (req, res, next) => {
     });
 };
 
-module.exports.getAllCards = (res, next) => {
+module.exports.getAllCards = (req, res, next) => {
   card.find({})
     .then((cardsData) => res.send({ data: cardsData })).catch(next);
 };
@@ -36,7 +36,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (!cardData) {
         throw new NotFoundError('Выбранного фото не существует');
       }
-      if (card.owner.toString() !== req.user._id) {
+      if (cardData.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав доступа');
       }
     card.findByIdAndRemove(req.params.cardId).then((user) =>
