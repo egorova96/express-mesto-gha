@@ -22,9 +22,15 @@ module.exports.createUser = (req, res, next) => {
   .then((hash) => user.create({
  name, about, avatar, email, password: hash,
 })).then((userData) => {
-      const createdUser = userData.toObject();
-      delete createdUser.password;
-      res.status(OK).send({ data: createdUser });
+      res.status(OK).send({
+ data: {
+ name: userData.name,
+        about: userData.about,
+        avatar: userData.avatar,
+        email: userData.email,
+        _id: userData._id,
+},
+      });
   })
 .catch((err) => {
     if (err.name === 'BadRequestError') {
