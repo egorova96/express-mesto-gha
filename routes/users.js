@@ -3,7 +3,7 @@ const routerUser = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
 const {
-  getUserId, getUsers, createUser, updateUserData, updateAvatar, getMyProfile,
+  getUserId, getUsers, updateUserData, updateAvatar, getMyProfile,
 } = require('../controllers/users');
 
 routerUser.get('/users', getUsers);
@@ -13,8 +13,6 @@ routerUser.get('/users/:userId', celebrate({
     userId: Joi.string().required().length(24).hex(),
   }),
 }), getUserId);
-
-routerUser.post('/users', createUser);
 
 routerUser.patch('/users/me', celebrate({
   body: Joi.object().keys({

@@ -7,7 +7,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const user = require('../models/user');
-const { CREATED_SUCCESS } = require('../utils/constants');
+const { OK } = require('../utils/constants');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
@@ -22,8 +22,11 @@ module.exports.createUser = (req, res, next) => {
   .then((hash) => user.create({
  name, about, avatar, email, password: hash,
 })).then((userData) => {
-    res.status(CREATED_SUCCESS).send({ data: userData });
-  }).catch((err) => {
+      const createdUser = userData.toObject();
+      delete createdUser.password;
+      res.status(OK).send({ data: createdUser });
+  })
+.catch((err) => {
     if (err.name === 'BadRequestError') {
       return next(new BadRequestError('Введены некорректные данные'));
     } if (err.code === 11000) {
@@ -33,7 +36,7 @@ module.exports.createUser = (req, res, next) => {
   });
 };
 
-const login = (req, res, next) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   user.findUserByCredentials(email, password)
   .then((userData) => {
@@ -43,7 +46,7 @@ const login = (req, res, next) => {
   .catch(next);
 };
 
-const getMyProfile = (req, res, next) => {
+module.exports.getMyProfile = (req, res, next) => {
   user.findById(req.user._id).then((userData) => {
     if (!userData) {
       throw new NotFoundError('Запрашиваемый пользователь не найден');
@@ -54,12 +57,12 @@ const getMyProfile = (req, res, next) => {
 };
 
 module.exports.getUserId = (req, res, next) => {
-  const { _id } = req.user;
-  user.findById(_id).then((userData) => {
+  const { userId } = req.params;
+  user.findById(userId).then((userData) => {
     if (!userData) {
       throw new NotFoundError('Запрашиваемый пользователь не найден');
     }
-    res.send({ data: userData });
+    return res.send({ data: userData });
   })
   .catch((err) => {
     if (err.name === 'UserError') {
@@ -69,7 +72,7 @@ module.exports.getUserId = (req, res, next) => {
   });
 };
 
-module.exports.getUsers = (res, next) => {
+module.exports.getUsers = (req, res, next) => {
   user.find({}).then((usersData) => res.send({ data: usersData }))
     .catch(next);
 };
@@ -102,10 +105,10 @@ module.exports.updateAvatar = (req, res, next) => {
       }
       res.send({ data: userData });
     })
-    .catch(next);
-};
-
-module.exports = {
-  login,
-  getMyProfile,
+    .catch((err) => {
+      if (err.name === 'BadRequestError') {
+        return next(new BadRequestError('Введены некорректные данные'));
+      }
+      return next(err);
+    });
 };

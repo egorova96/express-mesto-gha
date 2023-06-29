@@ -14,9 +14,8 @@ const BadRequestError = require('../errors/BadRequestError');
 module.exports.createCard = (req, res, next) => {
   console.log(req.user._id);
   const { name, link } = req.body;
-  const { _id } = req.user;
-  card.create({ name, link, owner: _id })
-  .then((userData) => res.status(CREATED_SUCCESS).send({ data: userData }))
+  card.create({ name, link, owner: req.user._id })
+  .then((cardData) => res.status(CREATED_SUCCESS).send({ data: cardData }))
     // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'BadRequestError') {
@@ -39,7 +38,7 @@ module.exports.deleteCard = (req, res, next) => {
         throw new NotFoundError('Выбранного фото не существует');
       }
       if (card.owner.toString() !== req.user._id) {
-        throw new ForbiddenError('Недостаточно прав');
+        throw new ForbiddenError('Недостаточно прав доступа');
       }
     card.findByIdAndRemove(req.params.cardId).then((userData) =>
     res.status(OK).send({ data: userData }))
@@ -77,15 +76,13 @@ module.exports.likeCard = (req, res, next) => {
 };
 
 module.exports.dislikeCard = (req, res, next) => {
-  const cardId = req.params._id;
-  const userId = req.user._id;
-  card.findById(cardId).then((cardData) => {
+  card.findById(req.params.cardId).then((cardData) => {
     if (!cardData) {
       throw new NotFoundError('Выбранного фото не существует');
     } return card
     .findByIdAndUpdate(
-    cardId,
-    { $pull: { likes: userId } },
+      req.params.cardId,
+    { $pull: { likes: req.user._id } },
     { new: true },
   )
     .then((newCardData) => {

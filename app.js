@@ -2,8 +2,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const ERROR_NOT_FOUND = 404;
+const { celebrate, Joi } = require('celebrate');
 const { createUser, login } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 
 const app = express();
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
@@ -17,20 +18,27 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // eslint-disable-next-line import/newline-after-import
+
 const userRouters = require('./routes/users');
 app.use(userRouters);
 const cardRouters = require('./routes/cards');
 app.use(cardRouters);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
+  }),
+}), login);
 
-app.use('*', (req, res) => res.status(ERROR_NOT_FOUND).send({ message: 'Не найдено' }));
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(/^(https?:\/\/)?[-\w.]+@([A-z0-9][-A-z0-9]+\.)+[A-z]{2,4}$/),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
+  }),
+}), createUser);
 
-/* app.get('/', (req, res) => {
-  res.send('hello world');
-});
-app.listen(3002, () => {
-  console.log('server is running on port 3002');
-  console.log(process.env);
-}); */
+app.use(auth);
