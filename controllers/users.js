@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable indent */
 /* eslint-disable no-useless-return */
@@ -61,15 +62,15 @@ module.exports.getUserId = (req, res, next) => {
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   user.findUserByCredentials(email, password)
-  .then((userData) => {
-    const token = jwt.sign({ _id: userData._id }, 'super-strong-secret', { expiresIn: '7d' });
+  .then((user) => {
+    const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
     res.send({ token });
   })
   .catch(next);
 };
 
 module.exports.getMyProfile = (req, res, next) => {
-  user.findById(req.userData._id).then((userData) => {
+  user.findById(req.user._id).then((userData) => {
     if (!userData) {
       throw new NotFoundError('Запрашиваемый пользователь не найден');
     }
@@ -86,7 +87,7 @@ module.exports.getUsers = (req, res, next) => {
 module.exports.updateUserData = (req, res, next) => {
   const { name, about } = req.body;
   user
-    .findByIdAndUpdate(req.userData._id, { name, about }, { new: true, runValidators: true })
+    .findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((userData) => {
       if (!userData) {
         throw new NotFoundError('Запрашиваемый пользователь не найден');
@@ -104,7 +105,7 @@ module.exports.updateUserData = (req, res, next) => {
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   user
-    .findByIdAndUpdate(req.userData._id, { avatar }, { new: true })
+    .findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .then((userData) => {
       if (!userData) {
         throw new NotFoundError('Пользователь не найден');
