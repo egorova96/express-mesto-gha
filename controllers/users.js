@@ -22,14 +22,14 @@ module.exports.createUser = (req, res, next) => {
   bcrypt.hash(password, 10)
   .then((hash) => user.create({
  name, about, avatar, email, password: hash,
-})).then((userData) => {
+})).then((user) => {
       res.status(OK).send({
  data: {
- name: userData.name,
-        about: userData.about,
-        avatar: userData.avatar,
-        email: userData.email,
-        _id: userData._id,
+ name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+        _id: user._id,
 },
       });
   })
@@ -45,11 +45,11 @@ module.exports.createUser = (req, res, next) => {
 
 module.exports.getUserId = (req, res, next) => {
   const { userId } = req.params;
-  user.findById(userId).then((userData) => {
-    if (!userData) {
+  user.findById(userId).then((user) => {
+    if (!user) {
       throw new NotFoundError('Запрашиваемый пользователь не найден');
     }
-    return res.send({ data: userData });
+    return res.send({ data: user });
   })
   .catch((err) => {
     if (err.name === 'UserError') {
@@ -70,11 +70,11 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.getMyProfile = (req, res, next) => {
-  user.findById(req.user._id).then((userData) => {
-    if (!userData) {
+  user.findById(req.user._id).then((user) => {
+    if (!user) {
       throw new NotFoundError('Запрашиваемый пользователь не найден');
     }
-    res.send({ data: userData });
+    res.send({ data: user });
   })
   .catch(next);
 };
@@ -88,11 +88,11 @@ module.exports.updateUserData = (req, res, next) => {
   const { name, about } = req.body;
   user
     .findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    .then((userData) => {
-      if (!userData) {
+    .then((user) => {
+      if (!user) {
         throw new NotFoundError('Запрашиваемый пользователь не найден');
       }
-      res.send({ data: userData });
+      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'BadRequestError') {
@@ -106,11 +106,11 @@ module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   user
     .findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-    .then((userData) => {
-      if (!userData) {
+    .then((user) => {
+      if (!user) {
         throw new NotFoundError('Пользователь не найден');
       }
-      res.send({ data: userData });
+      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'BadRequestError') {

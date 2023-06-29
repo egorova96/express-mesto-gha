@@ -4,7 +4,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-console */
 const card = require('../models/card');
-const { CREATED_SUCCESS, OK } = require('../utils/constants');
+const { OK } = require('../utils/constants');
 const ForbiddenError = require('../errors/ForbiddenError');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequestError = require('../errors/BadRequestError');
@@ -15,14 +15,13 @@ module.exports.createCard = (req, res, next) => {
   console.log(req.user._id);
   const { name, link } = req.body;
   card.create({ name, link, owner: req.user._id })
-  .then((cardData) => res.status(CREATED_SUCCESS).send({ data: cardData }))
+  .then((cardData) => res.status(OK).send({ data: cardData }))
     // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'BadRequestError') {
-        next(new BadRequestError('Введены неверные данные'));
-      } else {
-      next(err);
+        return next(new BadRequestError('Введены неверные данные'));
       }
+      return next(err);
     });
 };
 
@@ -40,8 +39,8 @@ module.exports.deleteCard = (req, res, next) => {
       if (card.owner.toString() !== req.user._id) {
         throw new ForbiddenError('Недостаточно прав доступа');
       }
-    card.findByIdAndRemove(req.params.cardId).then((userData) =>
-    res.status(OK).send({ data: userData }))
+    card.findByIdAndRemove(req.params.cardId).then((user) =>
+    res.status(OK).send({ data: user }))
     .catch((err) => {
       if (err.name === 'UserError') {
         return next(new BadRequestError('Неверный Id пользователя'));
