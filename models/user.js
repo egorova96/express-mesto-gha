@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-unused-vars */
 const mongoose = require('mongoose');

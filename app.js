@@ -9,9 +9,6 @@ const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
-app.listen(PORT, () => {
-  console.log(`Server ok ${PORT}`);
-});
 const app = express();
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 app.use(bodyParser.json());
@@ -21,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().email().required(),
+    email: Joi.string().required(),
     password: Joi.string().min(8).required(),
   }),
 }), login);
@@ -30,8 +27,8 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/^https?:\/\/[\w\-\.\/~:\?\#\[\]@!$&'\(\)\*\+,;=]+[\-\.\/~:\?\#\[\]@!$&'\(\)\*\+,;=]{1}[\w\-\.\/~:\?\#\[\]@!$&'\(\)\*\+,;=]+[#\/]?$/),
-    email: Joi.string().email().required(),
+    avatar: Joi.string().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/),
+    email: Joi.string().required(),
     password: Joi.string().min(8).required(),
   }),
 }), createUser);
@@ -53,5 +50,8 @@ app.use((err, res) => {
 });
 app.use(auth);
 app.use(errors());
+app.listen(PORT, () => {
+  console.log(`Server ok ${PORT}`);
+});
 
 /* /^(https?:\/\/)?[-\w.]+@([A-z0-9][-A-z0-9]+\.)+[A-z]{2,4}$/ */

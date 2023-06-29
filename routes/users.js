@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 const routerUser = require('express').Router();
 
 const { celebrate, Joi } = require('celebrate');
@@ -7,6 +8,7 @@ const {
 } = require('../controllers/users');
 
 routerUser.get('/users', getUsers);
+routerUser.get('/users/me', getMyProfile);
 
 routerUser.get('/users/:userId', celebrate({
   params: Joi.object().keys({
@@ -23,9 +25,8 @@ routerUser.patch('/users/me', celebrate({
 
 routerUser.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().pattern(/^(https?:\/\/)?[-\w.]+@([A-z0-9][-A-z0-9]+\.)+[A-z]{2,4}$/).required(),
+    avatar: Joi.string().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/).required(),
   }),
 }), updateAvatar);
-routerUser.get('/users/me', getMyProfile);
 
 module.exports = routerUser;
