@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required(),
+    email: Joi.string().required().email(),
     password: Joi.string().min(8).required(),
   }),
 }), login);
@@ -28,7 +28,7 @@ app.post('/signup', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/),
-    email: Joi.string().required(),
+    email: Joi.string().required().email(),
     password: Joi.string().min(8).required(),
   }),
 }), createUser);
@@ -38,7 +38,7 @@ app.use(userRouters);
 const cardRouters = require('./routes/cards');
 app.use(cardRouters);
 app.use(errors());
-app.use((err, res) => {
+app.use((err, res, next) => {
   const { statusCode = 500, message } = err;
   res
     .status(statusCode)
@@ -47,7 +47,9 @@ app.use((err, res) => {
         ? 'Неизвестная ошибка'
         : message,
     });
+  next();
 });
+
 app.use(auth);
 app.use(errors());
 app.listen(PORT, () => {
