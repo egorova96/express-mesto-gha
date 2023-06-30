@@ -16,7 +16,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // eslint-disable-next-line import/newline-after-import
-app.use(auth);
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -33,7 +32,7 @@ app.post('/signup', celebrate({
     password: Joi.string().min(8).required(),
   }),
 }), createUser);
-
+app.use(auth);
 const userRouters = require('./routes/users');
 app.use(userRouters);
 const cardRouters = require('./routes/cards');
@@ -45,4 +44,3 @@ app.listen(PORT, () => {
   console.log(`Server ok ${PORT}`);
 });
 
-/* /^(https?:\/\/)?[-\w.]+@([A-z0-9][-A-z0-9]+\.)+[A-z]{2,4}$/ */
